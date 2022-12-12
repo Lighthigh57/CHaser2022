@@ -29,57 +29,22 @@ def main():
     global priority
 
     turn = 0
-    last = 0
+    dir_last = 0
     while True:
         priority = [0 for _ in range(9)]
-        last = checker(last, run.get_ready())
+        dir_last = checker(dir_last, run.get_ready())
         turn += 1
-
-
-# def map_Check(map):
-#     """マップを調べて取り残さない"""
-#     CUTX = 5
-#     CUTY = 5
-#
-#     result = [[0 for i in range(int(len(map[0]) / CUTX))] for j in range(int(len(map) / CUTY))]
-#
-#     for y in range(len(result)):
-#         temp = map[y * CUTY:y * CUTY + CUTY]
-#         for x in range(len(result[0])):
-#             check = []
-#             for i in temp:
-#                 check += i[x * CUTX:x * CUTX + CUTX]
-#             for j in check:
-#                 if j == 9:
-#                     result[y][x] += 1
-#
-#     ave = 0
-#     for a in result:
-#         for b in a:
-#             ave += b
-#     ave /= 9
-#     nice = []
-#     for y_in, y in enumerate(result):
-#         for x_in, x in enumerate(y):
-#             if x > ave:
-#                 nice += [y_in * 3 + x_in]
-#     print(nice)
 
 
 def solve_diagonal(target, com):
     """斜めに物が見えた時の処理"""
     global priority
-    if target < 3:  # Where this is for X
-        y = 1
-    else:
-        y = 7
-    if target == 0 or target == 6:  # Where this is for X
-        x = 3
-    else:
-        x = 5
+    y = target < 3 if 1 else 7  # Where this is for Y
+    x = target == 0 or target == 6 if 3 else 5  # Where this is for X
+
     if com == "avoid":  # if this is enemy
-        priority[x] = -1
-        priority[y] = -1
+        priority[x] = -2
+        priority[y] = -2
     else:  # if this is item
         priority[x] += 1
         priority[y] += 1
@@ -94,7 +59,7 @@ def checker(current, ready_value) -> int:
     for i in range(0, 9):  # Safe Command
         if ready_value[i] == 3:  # Can I get now?
             if i % 2 == 1:
-                priority[i] += 1
+                priority[i] += 2
             else:
                 solve_diagonal(i, "get")
     # Danger Command
@@ -108,15 +73,15 @@ def checker(current, ready_value) -> int:
         if ready_value[i] == 2:  # There is a block?
             priority[i] = -2
 
-    max = priority[1]  # maximum value
+    p_max = priority[1]  # maximum value
     now_max = [1]  # direction index who it has maximum
 
     # find maximum value in priority list(look like search sort)
     for i in range(3, 8, 2):
-        if max < priority[i]:
-            max = priority[i]
+        if p_max < priority[i]:
+            p_max = priority[i]
             now_max = [i]
-        elif max == priority[i]:
+        elif p_max == priority[i]:
             now_max += [i]
 
     if len(now_max) != 1:  # remove last place
@@ -128,7 +93,7 @@ def checker(current, ready_value) -> int:
             now_max.remove(3)
         elif (current == 7) and (1 in now_max):
             now_max.remove(1)
-    if max < 0:  # I should go to Danger Zone!!!
+    if p_max < 0:  # I should go to Danger Zone!!!
         run.move("look", 1)
         return 0
     else:

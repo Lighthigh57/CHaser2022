@@ -34,33 +34,33 @@ class Client:
     def __str_send(self, send_str):
         try:
             self.client.sendall(send_str.encode("utf-8"))
-        except:
+        except OSError:
             print("send error:{0}\0".format(send_str))
 
     def __order(self, order_str, gr_flag=False):
         try:
             if gr_flag:
-                responce = self.client.recv(4096)
+                response = self.client.recv(4096)
 
-                if b'@' in responce:
+                if b'@' in response:
                     pass  # Connection completed.
                 else:
                     print("Connection failed.")
 
             self.__str_send(order_str + "\r\n")
 
-            responce = self.client.recv(4096)[0:11].decode("utf-8")
+            response = self.client.recv(4096)[0:11].decode("utf-8")
 
             if not gr_flag:
                 self.__str_send("#\r\n")
 
-            if responce[0] == '1':
-                return [int(x) for x in responce[1:10]]
-            elif responce[0] == '0':
+            if response[0] == '1':
+                return [int(x) for x in response[1:10]]
+            elif response[0] == '0':
                 raise OSError("Game Set!")
             else:
-                print("responce[0] = {0} : Response error.".format(responce[0]))
-                raise OSError("Responce Error")
+                print("response[0] = {0} : Response error.".format(response[0]))
+                raise OSError("Response Error")
 
         except OSError as e:
             print(e)

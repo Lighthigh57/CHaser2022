@@ -4,19 +4,19 @@ import Command
 # PlayerName = Light
 
 priority = []
-"""priority = 優先度"""
+"Direction priority"
 
 run = None
-"""instance of Command class"""
+"instance of Command class"
 
 last = 0
-"""last direction"""
+"last direction"
 
 Check_Zone = 0
-"""Interval of Map_Check"""
+"Interval of Map_Check"
 
 Safety_Heart = 0
-"""ModeChange border"""
+"ModeChange border"
 
 item = 0
 
@@ -36,15 +36,25 @@ def main():
 def solve_diagonal(target, com):
     """斜めに物が見えた時の処理"""
     global priority
+    global run
+
     y = 1 if target < 3 else 7  # Where this is for Y
     x = 3 if target == 0 or target == 6 else 5  # Where this is for X
 
     if com == "avoid":  # if this is enemy
-        priority[x] = -2
-        priority[y] = -2
+        run.move("put", x if random.randint(0, 1) == 0 else y)
+
     else:  # if this is item
         priority[x] += 1
         priority[y] += 1
+
+
+def trap_check(dir: int):
+    result = run.move("look", dir)
+    if result[4] == 2:
+        priority[dir] = -2
+    else:
+        priority[dir] += 2
 
 
 def checker(current, ready_value) -> int:
@@ -53,10 +63,18 @@ def checker(current, ready_value) -> int:
     global priority
     global item
 
+    did_command = False
     for i in range(0, 9):  # Safe Command
         if ready_value[i] == 3:  # Can I get now?
             if i % 2 == 1:
-                priority[i] += 2
+                if i == 1 and ready_value[0] == ready_value[2] == 2:
+                    trap_check(1)
+                elif (i == 3 or i == 5) and ready_value[i-3] == ready_value[i+3] == 2:
+                    trap_check(i)
+                elif i == 7 and ready_value[6] == ready_value[2] == 8:
+                    trap_check(6)
+                else:
+                    priority[i] += 2
             else:
                 solve_diagonal(i, "get")
     # Danger Command
@@ -64,8 +82,9 @@ def checker(current, ready_value) -> int:
         if ready_value[i] == 1:  # Can I put there now?
             if i % 2 == 0:
                 solve_diagonal(i, "avoid")
+                did_command = True
             else:
-                run.move("put", i)
+                _ = run.move("put", i)
                 break
         if ready_value[i] == 2:  # There is a block?
             priority[i] = -2
@@ -90,12 +109,15 @@ def checker(current, ready_value) -> int:
             now_max.remove(3)
         elif (current == 7) and (1 in now_max):
             now_max.remove(1)
-    if p_max < 0:  # I should go to Danger Zone!!!
-        run.move("look", 1)
-        return 0
-    else:
-        goto = now_max[random.randint(0, len(now_max) - 1)]
-        run.move("walk", goto)
+
+    goto = 0
+    if not did_command:
+        if p_max < 0:  # I should go to Danger Zone!!!
+            run.move("look", 1)
+        else:
+            goto = now_max[random.randint(0, len(now_max) - 1)]
+            _ = run.move("walk", goto)
+
     return goto
 
 

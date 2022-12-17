@@ -12,9 +12,6 @@ run = None
 last = 0
 """last direction"""
 
-side = 0
-"""My Client's side"""
-
 Check_Zone = 0
 """Interval of Map_Check"""
 
@@ -39,8 +36,8 @@ def main():
 def solve_diagonal(target, com):
     """斜めに物が見えた時の処理"""
     global priority
-    y = target < 3 if 1 else 7  # Where this is for Y
-    x = target == 0 or target == 6 if 3 else 5  # Where this is for X
+    y = 1 if target < 3 else 7  # Where this is for Y
+    x = 3 if target == 0 or target == 6 else 5  # Where this is for X
 
     if com == "avoid":  # if this is enemy
         priority[x] = -2
@@ -103,6 +100,5 @@ def checker(current, ready_value) -> int:
 
 
 if __name__ == "__main__":
-    Side = int(input("Cool:0,Hot:1 : "))
     run = Command.Command()  # Set Command instance
     main()

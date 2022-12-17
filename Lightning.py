@@ -49,6 +49,17 @@ def solve_diagonal(target, com):
         priority[y] += 1
 
 
+def around_check(ready_value):
+    for i in range(0, 9):
+        if ready_value[i] == 1:  # Can I put there now?
+            if i % 2 == 0:
+                solve_diagonal(i, "avoid")
+                did_command = True
+            else:
+                _ = run.move("put", i)
+                break
+
+
 def trap_check(dir: int):
     result = run.move("look", dir)
     if result[4] == 2:
@@ -68,10 +79,19 @@ def checker(current, ready_value) -> int:
         if ready_value[i] == 3:  # Can I get now?
             if i % 2 == 1:
                 if i == 1 and ready_value[0] == ready_value[2] == 2:
+                    if not run.ready_OK:
+                        ready_value = run.get_ready()
+                        around_check(ready_value)
                     trap_check(1)
                 elif (i == 3 or i == 5) and ready_value[i-3] == ready_value[i+3] == 2:
+                    if not run.ready_OK:
+                        ready_value = run.get_ready()
+                        around_check(ready_value)
                     trap_check(i)
                 elif i == 7 and ready_value[6] == ready_value[2] == 8:
+                    if not run.ready_OK:
+                        ready_value = run.get_ready()
+                        around_check(ready_value)
                     trap_check(6)
                 else:
                     priority[i] += 2

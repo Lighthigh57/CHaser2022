@@ -1,3 +1,5 @@
+from typing import List
+
 import CHaser
 
 
@@ -11,7 +13,7 @@ class Command:
         """Set instance"""
         self.ready_OK = False
 
-    def move(self, com, dir):
+    def move(self, com: str, dir: int) -> List[int]:
         """
         各種行動を起こします。
         Get_info忘れないで！
